@@ -4,7 +4,7 @@
      sketch-data-*   — manifest.json та .glb конкретних проєктів
    Дані живуть довше за оболонку: оновлення в’ювера не стирає збережені моделі. */
 
-const VERSION = 'v4.0.0-sketchcab';
+const VERSION = 'v4.2.0-sketchcab';
 const SHELL_CACHE = `sketchcab-viewer-shell-${VERSION}`;
 const DATA_CACHE = 'sketchcab-viewer-data-v1';
 

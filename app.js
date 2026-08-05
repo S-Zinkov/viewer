@@ -719,6 +719,35 @@ async function buildAssemblyFromParts(parts) {
     });
   }
 
+  // Фурнітура й аксесуари (ніжки, ручки, штанги): геометрія вже в
+  // координатах збірки, тож додаємо як є. У специфікації їх немає —
+  // це супровідні об'єкти, а не деталі.
+  const extras = state.manifest.extras || [];
+  if (extras.length) {
+    try {
+      const scene = await loadPartsScene();
+      extras.forEach((extra) => {
+        const node = scene.getObjectByName(extra.node);
+        if (!node) return;
+        const copy = node.clone(true);
+        copy.userData.extra = true;
+
+        // Одна модель на багато місць: геометрія спільна, положення — матриця
+        if (Array.isArray(extra.matrix) && extra.matrix.length === 16) {
+          const holder = new THREE.Group();
+          holder.matrixAutoUpdate = false;
+          holder.matrix.fromArray(extra.matrix);
+          holder.add(copy);
+          assembly.add(holder);
+        } else {
+          assembly.add(copy);   // старий формат: геометрія вже на місці
+        }
+      });
+    } catch (error) {
+      console.warn('супровідні об’єкти не завантажено:', error);
+    }
+  }
+
   assembly.updateMatrixWorld(true);
   const bounds = boundsOf(assembly);
   stage.partObjects.forEach((entry) => {

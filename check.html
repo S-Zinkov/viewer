@@ -177,7 +177,14 @@
         try {
           var data = await manifest.json();
           add('data', 'ok', 'деталей у проєкті: ' + (data.parts || []).length);
-          await checkFile('data', 'projects/' + id + '/' + (data.assemblyGlb || 'models/assembly.glb'), 'data');
+          // з версії 4.0 усі деталі лежать в одному parts.glb;
+          // assembly.glb лишився тільки в старих проєктах
+          var model = data.partsGlb || data.assemblyGlb;
+          if (model) {
+            await checkFile('data', 'projects/' + id + '/' + model, 'data');
+          } else {
+            add('data', 'warn', 'у маніфесті немає моделі', 'зроби експорт наново');
+          }
         } catch (error) {
           add('data', 'bad', 'manifest.json не читається', String(error.message).slice(0, 100));
         }
