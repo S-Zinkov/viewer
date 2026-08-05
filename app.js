@@ -140,15 +140,15 @@ function initStage() {
   stage.scene = new THREE.Scene();
   stage.scene.background = null;
 
-  stage.camera = new THREE.PerspectiveCamera(42, 1, 0.01, 100);
+  stage.camera = new THREE.PerspectiveCamera(42, 1, 0.002, 200);
   stage.camera.position.set(1.2, 1.0, 1.6);
 
   stage.controls = new OrbitControls(stage.camera, canvas);
   stage.controls.enableDamping = true;
-  stage.controls.dampingFactor = 0.08;
+  stage.controls.dampingFactor = 0.22;   // менше інерції: зупиняється одразу
   stage.controls.rotateSpeed = 0.9;
   stage.controls.panSpeed = 0.8;
-  stage.controls.minDistance = 0.1;
+  stage.controls.minDistance = 0.02;     // можна підійти майже впритул
   stage.controls.maxDistance = 30;
 
   // Навігація як у SketchUp:
@@ -302,14 +302,14 @@ function frameObject(object, factor = 1.5) {
   const radius = Math.max(size.x, size.y, size.z) * 0.5 || 0.5;
   const distance = (radius / Math.tan((stage.camera.fov * Math.PI) / 360)) * factor;
 
-  stage.camera.near = Math.max(radius / 120, 0.005);
+  stage.camera.near = Math.max(radius / 400, 0.002);
   stage.camera.far = distance * 12;
   stage.camera.updateProjectionMatrix();
 
   const direction = new THREE.Vector3(0.85, 0.62, 1).normalize();
   stage.camera.position.copy(center).addScaledVector(direction, distance);
   stage.controls.target.copy(center);
-  stage.controls.minDistance = radius * 0.35;
+  stage.controls.minDistance = Math.max(radius * 0.04, 0.02);
   stage.controls.maxDistance = distance * 6;
   stage.controls.update();
 
