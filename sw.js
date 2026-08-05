@@ -4,9 +4,9 @@
      sketch-data-*   — manifest.json та .glb конкретних проєктів
    Дані живуть довше за оболонку: оновлення в’ювера не стирає збережені моделі. */
 
-const VERSION = 'v4.2.0-sketchcab';
+const VERSION = 'v4.3.0-sketchcab';
 const SHELL_CACHE = `sketchcab-viewer-shell-${VERSION}`;
-const DATA_CACHE = 'sketchcab-viewer-data-v1';
+const DATA_CACHE = 'sketchcab-viewer-data-v2';
 
 const SHELL_ASSETS = [
   './',
@@ -48,6 +48,7 @@ self.addEventListener('activate', (event) => {
     const keys = await caches.keys();
     await Promise.all(keys.map((key) => {
       if (key.startsWith('sketchcab-viewer-shell-') && key !== SHELL_CACHE) return caches.delete(key);
+      if (key.startsWith('sketchcab-viewer-data-') && key !== DATA_CACHE) return caches.delete(key);
       return null;
     }));
     await self.clients.claim();
@@ -116,12 +117,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (isDataRequest(url)) {
-    // .glb — незмінні файли: спершу кеш; JSON — спершу мережа
-    if (url.pathname.endsWith('.glb') || url.pathname.endsWith('.gltf')) {
-      event.respondWith(cacheFirst(request, DATA_CACHE).catch(() => caches.match(request)));
-    } else {
-      event.respondWith(networkFirst(request, DATA_CACHE));
-    }
+    // Спершу мережа, кеш — запасний варіант для офлайну.
+    // Раніше .glb бралися «спершу з кешу» як незмінні файли, і після
+    // повторного експорту браузер уперто показував стару модель:
+    // адреса та сама, вміст новий — оновлення ніколи не доходило.
+    event.respondWith(networkFirst(request, DATA_CACHE));
     return;
   }
 
